@@ -5,7 +5,11 @@ import {BetCondition} from "../src/BetCondition.sol";
 import "@chainlink/v0.8/ChainlinkClient.sol";
 import "@chainlink/v0.8/ConfirmedOwner.sol";
 
-contract TaiwanPresident2024BetCondition is BetCondition, ChainlinkClient, ConfirmedOwner {
+contract TaiwanPresident2024BetCondition is
+    BetCondition,
+    ChainlinkClient,
+    ConfirmedOwner
+{
     using Chainlink for Chainlink.Request;
 
     string public id;
@@ -28,13 +32,14 @@ contract TaiwanPresident2024BetCondition is BetCondition, ChainlinkClient, Confi
         setChainlinkOracle(0x6090149792dAAeE9D1D568c9f9a6F6B46AA29eFD);
         jobId = "7d80a6386ef543a3abb52817f6707e3b";
         fee = (1 * LINK_DIVISIBILITY) / 10; // 0,1 * 10**18 (Varies by network and job)
+        end_time = 1704067200; // 總統大選投票日隔天 台湾时间: 2024/01/14 00:00:00
     }
 
     /**
      * Create a Chainlink request to retrieve API response, find the target
      * data, then multiply by 1000000000000000000 (to remove decimal places from data).
      */
-    function requestVolumeData() internal returns (bytes32 requestId) {
+    function requestVolumeData() public ended returns (bytes32 requestId) {
         Chainlink.Request memory req = buildChainlinkRequest(
             jobId,
             address(this),
@@ -42,10 +47,7 @@ contract TaiwanPresident2024BetCondition is BetCondition, ChainlinkClient, Confi
         );
 
         // Set the URL to perform the GET request on
-        req.add(
-            "get",
-            "http://3.80.75.99/json"
-        );
+        req.add("get", "http://3.80.75.99/json");
 
         req.add("path", "TaiwanPresident2024,Result"); // Chainlink nodes 1.0.0 and later support this format
 
@@ -65,6 +67,12 @@ contract TaiwanPresident2024BetCondition is BetCondition, ChainlinkClient, Confi
     ) public recordChainlinkFulfillment(_requestId) {
         emit RequestFirstId(_requestId, _id);
         id = _id;
+
+        if (StringCompare(id, "Lai Ching-te")) {
+            result = 1;
+        } else {
+            result = 2;
+        }
     }
 
     /**
@@ -78,20 +86,16 @@ contract TaiwanPresident2024BetCondition is BetCondition, ChainlinkClient, Confi
         );
     }
 
-    function getAnswer() external ended override returns (bool) {
-        if (result == 0 ) {
-          requestVolumeData();
-
-          if (StringCompare(id, "Lai Ching-te")) {
-            result = 1;
-          } else {
-            result = 2;
-          }  
-        }
+    function getAnswer() external view override ended returns (bool) {
+        require(result != 0, "Result not set yet");
         return result == 1 ? true : false;
     }
 
-    function StringCompare(string memory a, string memory b) internal pure returns (bool) {
-      return (keccak256(abi.encodePacked((a))) == keccak256(abi.encodePacked((b))) );
+    function StringCompare(
+        string memory a,
+        string memory b
+    ) internal pure returns (bool) {
+        return (keccak256(abi.encodePacked((a))) ==
+            keccak256(abi.encodePacked((b))));
     }
 }

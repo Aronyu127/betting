@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 abstract contract BetCondition {
     uint256 end_time;
     modifier ended() {
-        require(block.timestamp >= end_time, "Bet has not ended");
+        require(block.timestamp >= end_time, "Bet Condition has not ended");
         _;
     }
     function getAnswer() external virtual returns (bool){}
