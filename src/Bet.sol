@@ -52,7 +52,7 @@ contract Bet {
 
   function finish() external ended {
     require(result == 0, "Result has been set");
-    result = condition.get_answer(block.timestamp) ? 1 : 2;
+    result = condition.getAnswer(block.timestamp) ? 1 : 2;
     remaining_reward = result == 1 ? total_no_bet : total_yes_bet;
   }
 

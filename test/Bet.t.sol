@@ -3,7 +3,13 @@ pragma solidity ^0.8.13;
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Test, console2} from "forge-std/Test.sol";
 import {Bet} from "../src/Bet.sol";
-import {BetCondition} from "../src/BetCondition.sol";
+import {IBetCondition} from "../src/IBetCondition.sol";
+
+contract BetCondition is IBetCondition {
+    function getAnswer(uint256 time) external view override returns (bool) {
+        return true;
+    }
+}
 
 contract BetTest is Test {
     address constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
@@ -83,7 +89,7 @@ contract BetTest is Test {
       test_bet();
 
       vm.warp(endTime + 1);
-      bytes memory data = abi.encodeWithSelector(bytes4(keccak256("get_answer(uint256)")), endTime + 1);
+      bytes memory data = abi.encodeWithSelector(bytes4(keccak256("getAnswer(uint256)")), endTime + 1);
       vm.mockCall(address(condition), data, abi.encode(false));
       bet.finish();
 
