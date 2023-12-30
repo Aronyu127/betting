@@ -3,10 +3,13 @@ pragma solidity ^0.8.13;
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Test, console2} from "forge-std/Test.sol";
 import {Bet} from "../src/Bet.sol";
-import {IBetCondition} from "../src/IBetCondition.sol";
+import {BetCondition} from "../src/BetCondition.sol";
 
-contract BetCondition is IBetCondition {
-    function getAnswer(uint256 time) external view override returns (bool) {
+contract BetConditionInstance is BetCondition {
+    constructor() {
+        end_time = block.timestamp + 100;
+    }
+    function getAnswer() external override returns (bool) {
         return true;
     }
 }
@@ -16,7 +19,7 @@ contract BetTest is Test {
     
     Bet public bet;
     IERC20 public BetToken;
-    BetCondition public condition;
+    BetConditionInstance public condition_instance;
     address public user1;
     address public user2;
     address public user3;
@@ -32,9 +35,9 @@ contract BetTest is Test {
         deal(address(BetToken), user2, 900 * usdc_decimal);
         user3 = makeAddr("user3");
         deal(address(BetToken), user3, 500 * usdc_decimal);
-        condition = new BetCondition();
-        endTime = block.timestamp + 1000;
-        bet = new Bet(address(BetToken), address(condition), endTime);
+        condition_instance = new BetConditionInstance();
+        endTime = condition_instance.endTime();
+        bet = new Bet(address(BetToken), address(condition_instance));
     }
 
     function test_bet() public {
@@ -89,8 +92,8 @@ contract BetTest is Test {
       test_bet();
 
       vm.warp(endTime + 1);
-      bytes memory data = abi.encodeWithSelector(bytes4(keccak256("getAnswer(uint256)")), endTime + 1);
-      vm.mockCall(address(condition), data, abi.encode(false));
+      bytes memory data = abi.encodeWithSelector(bytes4(keccak256("getAnswer()")));
+      vm.mockCall(address(condition_instance), data, abi.encode(false));
       bet.finish();
 
       bet.claim(user2);

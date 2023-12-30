@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 import {console2} from "forge-std/Test.sol";
-import {IBetCondition} from "../src/IBetCondition.sol";
+import {BetCondition} from "../src/BetCondition.sol";
 import "@chainlink/v0.8/ChainlinkClient.sol";
 import "@chainlink/v0.8/ConfirmedOwner.sol";
 
-contract TaiwanPresident2024BetCondition is IBetCondition, ChainlinkClient, ConfirmedOwner {
+contract TaiwanPresident2024BetCondition is BetCondition, ChainlinkClient, ConfirmedOwner {
     using Chainlink for Chainlink.Request;
 
     string public id;
@@ -78,7 +78,7 @@ contract TaiwanPresident2024BetCondition is IBetCondition, ChainlinkClient, Conf
         );
     }
 
-    function getAnswer(uint256 time) external returns (bool) {
+    function getAnswer() external ended override returns (bool) {
         if (result == 0 ) {
           requestVolumeData();
 
