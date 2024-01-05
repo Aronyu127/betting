@@ -16,7 +16,7 @@ Users can use this contract to set betting conditions for a wager. The steps to 
 
 ## Example (Deployed on Sepolia testnet)
 
-### TaiwanPresident2024BetCondition
+### TaiwanPresident2024BetCondition
 - Description：Will Lai Ching-te be the next president of Taiwan?
 - Contract Address： `0x41Bdeb82C86465758721fF7AcF57cb63D2d1215D`
 - End_time： 2024/01/14 00:00:00 (+08:00)  The day after Taiwan Presidential Election Voting Day
