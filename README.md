@@ -1,17 +1,31 @@
-## Foundry
+## Betting smart contract
+Users can use this contract to set betting conditions for a wager. The steps to use it are as follows:
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+1. Inherit the `BetCondition` contract and create your own betting condition contract, `{YouOwn}BetCondition`. Define the achievement logic and set the end time.
+2. Create a Bet contract by inputting the ERC20 token address you want to use as a bet and the address of the newly created condition contract.
+3. Users interact with the `Betting` contract to place bets.
+4. When the settlement time is exceeded, anyone can call `Bet.finish()` to settle the results.
+5. Use `Bet.Claim(address)` to help the winner claim their rewards.
+6. The reward calculation formula (using the example where the final condition is true) is:
+     - `User bet Amount on true` / `Total amount bet on true` * `Total amount bet on false`.
 
-Foundry consists of:
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
 
-## Documentation
+## Flowchart
+![Flowchart](Flowchart.jpeg)
 
-https://book.getfoundry.sh/
+## Example (Deployed on Sepolia testnet)
+
+### TaiwanPresident2024BetCondition
+- Description：Will Lai Ching-te be the next president of Taiwan?
+- Contract Address： `0x41Bdeb82C86465758721fF7AcF57cb63D2d1215D`
+- End_time： 2024/01/14 00:00:00 (+08:00)  The day after Taiwan Presidential Election Voting Day
+- Action: Use chainlink to get offchain data to return the result
+
+### Betting
+- Contract Address： `0xFD65Bc601BC31fA4dd9e0Faa6252815fBb9796A6`
+- ERC20 address:  WETH `0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9`
+- Condition Contract address: `0x41Bdeb82C86465758721fF7AcF57cb63D2d1215D`
 
 ## Usage
 
@@ -21,46 +35,15 @@ https://book.getfoundry.sh/
 $ forge build
 ```
 
-### Test
-
-```shell
-$ forge test
-```
-
-### Format
-
-```shell
-$ forge fmt
-```
-
-### Gas Snapshots
-
-```shell
-$ forge snapshot
-```
-
-### Anvil
-
-```shell
-$ anvil
-```
-
 ### Deploy
 
 ```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
+$ ETHERSCAN_API_KEY=your_own_api_key
+$ forge script --rpc-url https://sepolia.gateway.tenderly.co script/deployTaiwanPresident2024Bet.s.sol:deployTaiwanPresident2024BetConditionScript --verify --etherscan-api-key $ETHERSCAN_API_KEY --broadcast
 ```
 
-### Cast
+## Test
 
 ```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
+$ forge test -vv
 ```

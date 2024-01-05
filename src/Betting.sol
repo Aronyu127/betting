@@ -4,7 +4,7 @@ import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {BetCondition} from "../src/BetCondition.sol";
 import {console} from "forge-std/Test.sol";
 
-contract Bet {
+contract Betting {
   address public erc20_address;
   IERC20 public bet_token;
   address public condition_address;
@@ -69,13 +69,12 @@ contract Bet {
     uint256 reward = bet_amount * total_reward / total_bet ;
     uint256 claim_amount = bet_amount + reward;
 
-    // console.log("bet_amount: %s", bet_amount);
-    // console.log("total_bet: %s", total_bet);
-    // console.log("total_reward: %s", total_reward);
-
-    // console.log("reward: %s", reward);
     claim_list[better] = true;
     remaining_reward -= reward;
     bet_token.transfer(better, claim_amount);  
+  }
+
+  function description() external view returns (string memory) {
+    return condition.getDescription();
   }
 }

@@ -32,7 +32,8 @@ contract TaiwanPresident2024BetCondition is
         setChainlinkOracle(0x6090149792dAAeE9D1D568c9f9a6F6B46AA29eFD);
         jobId = "7d80a6386ef543a3abb52817f6707e3b";
         fee = (1 * LINK_DIVISIBILITY) / 10; // 0,1 * 10**18 (Varies by network and job)
-        end_time = 1704067200; // 總統大選投票日隔天 台湾时间: 2024/01/14 00:00:00
+        end_time = 1705190400; // 總統大選投票日隔天 台湾时间: 2024/01/14 00:00:00
+        description = "Will Lai Ching-te be the next president of Taiwan?";
     }
 
     /**

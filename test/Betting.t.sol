@@ -2,22 +2,23 @@
 pragma solidity ^0.8.13;
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Test, console2} from "forge-std/Test.sol";
-import {Bet} from "../src/Bet.sol";
+import {Betting} from "../src/Betting.sol";
 import {BetCondition} from "../src/BetCondition.sol";
 
 contract BetConditionInstance is BetCondition {
     constructor() {
         end_time = block.timestamp + 100;
+        description = "Bet Description";
     }
     function getAnswer() external override returns (bool) {
         return true;
     }
 }
 
-contract BetTest is Test {
+contract BettingTest is Test {
     address constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
     
-    Bet public bet;
+    Betting public betting;
     IERC20 public BetToken;
     BetConditionInstance public condition_instance;
     address public user1;
@@ -37,55 +38,59 @@ contract BetTest is Test {
         deal(address(BetToken), user3, 500 * usdc_decimal);
         condition_instance = new BetConditionInstance();
         endTime = condition_instance.endTime();
-        bet = new Bet(address(BetToken), address(condition_instance));
+        betting = new Betting(address(BetToken), address(condition_instance));
+    }
+
+    function test_descritpion() public {
+      assertEq(betting.description(), condition_instance.getDescription());
     }
 
     function test_bet() public {
       vm.startPrank(user1);
-      BetToken.approve(address(bet), 1000 * usdc_decimal);
-      bet.bet(1000 * usdc_decimal, true);
+      BetToken.approve(address(betting), 1000 * usdc_decimal);
+      betting.bet(1000 * usdc_decimal, true);
       vm.stopPrank();
 
       vm.startPrank(user2);
-      BetToken.approve(address(bet), 900 * usdc_decimal);
-      bet.bet(900 * usdc_decimal, false);
+      BetToken.approve(address(betting), 900 * usdc_decimal);
+      betting.bet(900 * usdc_decimal, false);
       vm.stopPrank();
 
       vm.startPrank(user3);
-      BetToken.approve(address(bet), 500 * usdc_decimal);
-      bet.bet(500 * usdc_decimal, true);
+      BetToken.approve(address(betting), 500 * usdc_decimal);
+      betting.bet(500 * usdc_decimal, true);
       vm.stopPrank();
 
-      assertEq(BetToken.balanceOf(address(bet)), 2400 * usdc_decimal);
-      assertEq(bet.yes_bet(user1), 1000 * usdc_decimal);
-      assertEq(bet.no_bet(user2), 900 * usdc_decimal);
-      assertEq(bet.yes_bet(user3), 500 * usdc_decimal);
+      assertEq(BetToken.balanceOf(address(betting)), 2400 * usdc_decimal);
+      assertEq(betting.yes_bet(user1), 1000 * usdc_decimal);
+      assertEq(betting.no_bet(user2), 900 * usdc_decimal);
+      assertEq(betting.yes_bet(user3), 500 * usdc_decimal);
     }
 
     function test_finish_fail() public {
       test_bet();
 
       vm.expectRevert("Bet has not ended");
-      bet.finish();
+      betting.finish();
     }
 
     function test_finish_with_yes_and_claim() public {
       test_bet();
 
       vm.warp(endTime + 1);
-      bet.finish();
+      betting.finish();
 
-      bet.claim(user1);
-      bet.claim(user3);
+      betting.claim(user1);
+      betting.claim(user3);
 
       assertEq(BetToken.balanceOf(user1), 1600 * usdc_decimal);
       assertEq(BetToken.balanceOf(user3), 800 * usdc_decimal);
 
       vm.expectRevert("Already claimed");
-      bet.claim(user1);
+      betting.claim(user1);
  
       vm.expectRevert("Notthing to claim");
-      bet.claim(user2);
+      betting.claim(user2);
     }
 
     function test_finish_with_false_and_claim() public {
@@ -94,16 +99,16 @@ contract BetTest is Test {
       vm.warp(endTime + 1);
       bytes memory data = abi.encodeWithSelector(bytes4(keccak256("getAnswer()")));
       vm.mockCall(address(condition_instance), data, abi.encode(false));
-      bet.finish();
+      betting.finish();
 
-      bet.claim(user2);
+      betting.claim(user2);
 
       assertEq(BetToken.balanceOf(user2), 2400 * usdc_decimal);
 
       vm.expectRevert("Already claimed");
-      bet.claim(user2);
+      betting.claim(user2);
  
       vm.expectRevert("Notthing to claim");
-      bet.claim(user1);
+      betting.claim(user1);
     }
 }
