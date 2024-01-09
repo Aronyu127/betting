@@ -8,6 +8,7 @@ import {BetCondition} from "../src/BetCondition.sol";
 contract BetConditionInstance is BetCondition {
     constructor() {
         end_time = block.timestamp + 100;
+        stop_bet_time = block.timestamp + 50;
         description = "Bet Description";
     }
     function getAnswer() external override returns (bool) {
@@ -16,7 +17,7 @@ contract BetConditionInstance is BetCondition {
 }
 
 contract BettingTest is Test {
-    address constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
+    address constant USDC = 0x43506849D7C04F9138D1A2050bbF3A0c054402dd;
     
     Betting public betting;
     IERC20 public BetToken;
@@ -26,7 +27,9 @@ contract BettingTest is Test {
     address public user3;
     uint256 constant usdc_decimal = 10 ** 6;
     uint256 public endTime;
+    uint256 public stopBetTime;
     function setUp() public {
+
         string memory rpc = vm.envString("MAINNET_RPC_URL");
         vm.createSelectFork(rpc);
         BetToken = IERC20(USDC);
@@ -38,11 +41,30 @@ contract BettingTest is Test {
         deal(address(BetToken), user3, 500 * usdc_decimal);
         condition_instance = new BetConditionInstance();
         endTime = condition_instance.endTime();
+        stopBetTime = condition_instance.stopBetTime();
         betting = new Betting(address(BetToken), address(condition_instance));
     }
 
     function test_descritpion() public {
       assertEq(betting.description(), condition_instance.getDescription());
+    }
+
+    function test_bet_after_stop_time_fail() public {
+      vm.startPrank(user1);
+      BetToken.approve(address(betting), 1000 * usdc_decimal);
+      vm.expectRevert("Bet has stopped bet");
+      vm.warp(stopBetTime + 1);
+      betting.bet(1000 * usdc_decimal, true);
+      vm.stopPrank();
+    }
+
+    function test_bet_after_end_time_fail() public {
+      vm.startPrank(user1);
+      BetToken.approve(address(betting), 1000 * usdc_decimal);
+      vm.expectRevert("Bet has ended");
+      vm.warp(endTime + 1);
+      betting.bet(1000 * usdc_decimal, true);
+      vm.stopPrank();
     }
 
     function test_bet() public {

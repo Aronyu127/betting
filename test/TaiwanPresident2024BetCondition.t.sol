@@ -21,11 +21,11 @@ contract TaiwanPresident2024BetConditionTest is Test {
         condition.getAnswer();
         
         //set result to 1
-        vm.store(address(condition), bytes32(uint256(13)), bytes32(uint256(1)));
+        vm.store(address(condition), bytes32(uint256(14)), bytes32(uint256(1)));
         assertEq(condition.getAnswer(), true);
 
         //set result to 2
-        vm.store(address(condition), bytes32(uint256(13)), bytes32(uint256(2)));
+        vm.store(address(condition), bytes32(uint256(14)), bytes32(uint256(2)));
         assertEq(condition.getAnswer(), false);
     }
 

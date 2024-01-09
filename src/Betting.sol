@@ -10,6 +10,7 @@ contract Betting {
   address public condition_address;
   BetCondition public condition;
   uint256 public end_time;
+  uint256 public stop_bet_time;
   uint256 public total_bet;
   uint256 public total_yes_bet;
   uint256 public total_no_bet;
@@ -25,6 +26,7 @@ contract Betting {
     bet_token = IERC20(_erc20_address);
     condition = BetCondition(_condition_address);
     end_time = condition.endTime();
+    stop_bet_time = condition.stopBetTime();
     condition_address = _condition_address;
   }
 
@@ -35,6 +37,7 @@ contract Betting {
     
   function bet(uint256 amount, bool yes) external {
     require(block.timestamp < end_time, "Bet has ended");
+    require(block.timestamp < stop_bet_time, "Bet has stopped bet");
     require(bet_token.allowance(msg.sender, address(this)) >= amount, "Not enough allowance");
     require(bet_token.balanceOf(msg.sender) >= amount, "Not enough balance");
 
